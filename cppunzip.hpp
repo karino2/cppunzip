@@ -126,26 +126,25 @@ uint32_t Read4Byte(uint8_t* buf, size_t pos) {
 */
 struct CDReader {
   File& _file;
-  EOCDRecord _eocd;
-  size_t _cur;
-  bool _end;
+  size_t _curOffset;
+  size_t _endOffset;
 
   const size_t CDR_SIZE = 46; // except for filename, extra fields, comment.
 
-  CDReader(File& file, EOCDRecord eocd) : _file(file), _eocd(eocd), _cur(_eocd._cdOffset), _end( _eocd._cdEntryNum == 0) {
-  }
+  CDReader(File& file, size_t curOffset, size_t endOffset) : _file(file), _curOffset(curOffset), _endOffset(endOffset) {}
+  CDReader(File& file, const EOCDRecord& eocd) : CDReader(file, eocd._cdOffset, eocd._cdOffset+eocd._cdSize) {}
 
   void readSpecificSize(size_t offset, uint8_t* dst, size_t size) {
     _file.readSpecificSize(offset, dst, size, "Fail to read expected size in CDReader");
   }
 
-  bool isEnd() const { return _end; }
+  bool isEnd() const { return _curOffset >= _endOffset; }
 
   CDRecord readOne()
   {
     std::vector<uint8_t> buf(CDR_SIZE);
     uint8_t* data = buf.data();
-    readSpecificSize(_cur, data, CDR_SIZE);
+    readSpecificSize(_curOffset, data, CDR_SIZE);
 
     if (buf[0] != 0x50 || buf[1] != 0x4b || buf[2] != 0x01 || buf[3] != 0x02)
       throw UnZipError("Central Directory header signature does not match.");
@@ -171,14 +170,11 @@ struct CDReader {
     rec._extraField.resize(rec._extraFieldLength);
     rec._comment.resize(rec._commentLength);
 
-    readSpecificSize(_cur+46, (uint8_t*)&rec._fileName[0], rec._fileNameLength);
-    readSpecificSize(_cur+46+rec._fileNameLength, rec._extraField.data(), rec._extraFieldLength);
-    readSpecificSize(_cur+46+rec._fileNameLength+rec._extraFieldLength, (uint8_t*)&rec._comment[0], rec._commentLength);
+    readSpecificSize(_curOffset+46, (uint8_t*)&rec._fileName[0], rec._fileNameLength);
+    readSpecificSize(_curOffset+46+rec._fileNameLength, rec._extraField.data(), rec._extraFieldLength);
+    readSpecificSize(_curOffset+46+rec._fileNameLength+rec._extraFieldLength, (uint8_t*)&rec._comment[0], rec._commentLength);
 
-    _cur = _cur+46+rec._fileNameLength+rec._extraFieldLength+rec._commentLength;
-
-    if (_cur >= _eocd._cdOffset+_eocd._cdSize)
-      _end = true;
+    _curOffset = _curOffset+46+rec._fileNameLength+rec._extraFieldLength+rec._commentLength;
     
     return rec;
   }
