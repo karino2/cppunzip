@@ -218,19 +218,19 @@ struct Inflater {
 /*
   Read and uncompress CDRecord entry
 */
-struct FileEntryReader {
+struct CDRContentReader {
   File& _file;
   CDRecord _entry;
   size_t _offset;
 
   const size_t LOCAL_FILE_HEADER_SIZE = 30;
 
-  FileEntryReader(File& file, CDRecord entry) : _file(file), _entry(entry), _offset(0) {
+  CDRContentReader(File& file, CDRecord entry) : _file(file), _entry(entry), _offset(0) {
     _offset = readFileContentOffset();
   }
 
   void readSpecificSize(size_t offset, uint8_t* dst, size_t size) {
-    _file.readSpecificSize(offset, dst, size, "Fail to read expected size in FileEntryReader");
+    _file.readSpecificSize(offset, dst, size, "Fail to read expected size in CDRContentReader");
   }
 
   size_t readFileContentOffset()
@@ -369,27 +369,62 @@ struct FileEntry {
   impl::CDRecord _entry;
 
   FileEntry(File& file, impl::CDRecord entry) : _file(file), _entry(entry) {}
+  FileEntry& operator=(const FileEntry& src) { _entry = src._entry; return *this; }
 
   bool isDir() const { return _entry.isDir(); }
   const std::string& fileName() const { return _entry._fileName; }
 
   std::vector<uint8_t> readContent() {
-    impl::FileEntryReader ereader(_file, _entry);
+    impl::CDRContentReader ereader(_file, _entry);
     return ereader.readContent();
   }
-
 };
+
+struct file_entry_iterator {
+  File& _file;
+  size_t _curOffset;
+  size_t _endOffset;
+
+  bool _setupDone = false;
+  size_t _nextOffset = 0;
+  FileEntry _curEntry;
+  
+  file_entry_iterator(File& file, size_t curOffset, size_t endOffset) : _file(file), _curOffset(curOffset), _endOffset(endOffset), _curEntry(_file, impl::CDRecord()) {}
+
+  void ensureInit() {
+    if(_setupDone)
+      return;
+    _setupDone = true;
+    impl::CDReader reader(_file, _curOffset, _endOffset);
+    _curEntry = FileEntry(_file, reader.readOne());
+    _nextOffset = reader._curOffset;
+  }
+
+  FileEntry& operator *() {
+    ensureInit();
+    return _curEntry;
+  }
+
+  file_entry_iterator& operator++() {
+    ensureInit();
+    _curOffset = _nextOffset;
+    _setupDone = false;
+    return *this;
+  }
+
+  bool operator ==(const file_entry_iterator& other) const { return _curOffset == other._curOffset; }
+  bool operator !=(const file_entry_iterator& other) const { return _curOffset != other._curOffset; }
+};
+
 struct FileEntryLister {
   File& _file;
-  impl::CDReader _cdReader;
+  size_t _cdStartOffset;
+  size_t _cdEndOffset;
 
-  FileEntryLister(File& file, const impl::EOCDRecord& eocdr) : _file(file), _cdReader(_file, eocdr) {}
+  FileEntryLister(File& file, const impl::EOCDRecord& eocdr) : _file(file), _cdStartOffset(eocdr._cdOffset), _cdEndOffset(eocdr._cdOffset+eocdr._cdSize) {}
 
-  bool isEnd() const { return _cdReader.isEnd(); }
-
-  FileEntry readNext() {
-    return FileEntry(_file, _cdReader.readOne());
-  }
+  file_entry_iterator begin() const { return file_entry_iterator(_file, _cdStartOffset, _cdEndOffset); }
+  file_entry_iterator end() const { return file_entry_iterator(_file, _cdEndOffset, _cdEndOffset); }
 };
 
 struct UnZipper {

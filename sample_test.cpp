@@ -48,7 +48,7 @@ void testInternalAPI(File& f) {
     printf("   comp=%d, csize=%d, usize=%d\n", cdr._compressionMethod, cdr._compressedSize, cdr._uncompressedSize);
     if(!cdr.isDir()) {      
       printf("   not dir\n");
-      FileEntryReader ereader(f, cdr);
+      CDRContentReader ereader(f, cdr);
       std::vector<uint8_t> cont = ereader.readContent();
 
       printf("   uncompressedsize=%lu\n", cont.size());
@@ -68,9 +68,7 @@ void testPublicAPI(File& f) {
   using namespace std;
 
   UnZipper unzipper(f);
-  auto lister = unzipper.listFiles();
-  while(!lister.isEnd()) {
-    auto fileEntry = lister.readNext();
+  for( auto& fileEntry : unzipper.listFiles()) {
     cout << fileEntry.fileName() << ":" << endl;
     if (!fileEntry.isDir()) {
       auto content = fileEntry.readContent();
