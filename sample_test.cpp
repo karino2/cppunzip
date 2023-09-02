@@ -64,10 +64,7 @@ void testPublicAPI(File& f) {
 }
 
 int main() {
-  using namespace std;
-  using namespace cppunzip::impl;
-
-  ifstream is("test.zip");
+  std::ifstream is("test.zip");
   IStreamFile f(is);
 
   // testIStreamFile(f);
