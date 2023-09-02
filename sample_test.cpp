@@ -50,7 +50,7 @@ void testPublicAPI(File& f) {
   using namespace std;
 
   UnZipper unzipper(f);
-  for( auto& fileEntry : unzipper.listFiles()) {
+  for(auto& fileEntry : unzipper.listFiles()) {
     cout << fileEntry.fileName() << ":" << endl;
     if (!fileEntry.isDir()) {
       auto content = fileEntry.readContent();

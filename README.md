@@ -14,6 +14,10 @@ There is default File implementation of std::istream called IStreamFile.
 Basic usage is like this:
 
 ```
+#include "cppunzip.hpp"
+
+// ...
+
   using namespace cppunzip;
 
   std::ifstream is("test.zip");
