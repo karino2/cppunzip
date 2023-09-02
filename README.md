@@ -8,9 +8,8 @@
 
 ## Setup
 
-- Setup zlib
 - Put cppunzip.hpp in your proejct and include it
-- Add include and link flag for zlib (like `-lz` in Mac)
+- Setup zlib, add include and link flag for zlib (like `-lz` in Mac)
 
 ## Usage
 
