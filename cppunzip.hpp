@@ -64,7 +64,7 @@ protected:
     _istream.clear();
     _istream.seekg(pos);
     _istream.read((char*)dst, size);
-    return _istream.gcount();
+    return (int)_istream.gcount();
   }
 };
 
@@ -212,10 +212,10 @@ struct Inflater {
     if(inflateInit2(&s, -15) != Z_OK)
       throw UnZipError("Fail to initialize zlib inflate.");
     
-    s.avail_in = srcSize;
+    s.avail_in = (uint32_t)srcSize;
     s.next_in = srcBuf;
 
-    s.avail_out = dstSize;
+    s.avail_out = (uint32_t)dstSize;
     s.next_out = dstBuf;
 
     int status = inflate( &s, Z_SYNC_FLUSH );
@@ -338,7 +338,7 @@ struct EOCDRReader {
   // find 0x06054b50, also check comment len is inside buffer.
   // if not found, return -1.
   int findEndOfCDRInBlock(uint8_t* buf, size_t len) {
-    for(int pos = (int)len-EOCDR_SIZE; pos >= 0; pos--) {
+    for(int pos = (int)len-(int)EOCDR_SIZE; pos >= 0; pos--) {
       if(buf[pos+0] == 0x50 && buf[pos+1] == 0x4b && buf[pos+2] == 0x05 && buf[pos+3] == 0x06) {
         int commentLen = (int)Read2Byte(buf, pos+EOCDR_SIZE-2);
         if(pos+EOCDR_SIZE+commentLen <= len)

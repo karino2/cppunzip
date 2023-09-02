@@ -34,7 +34,7 @@ void testInternalAPI(File& f) {
       CDRContentReader ereader(f, cdr);
       std::vector<uint8_t> cont = ereader.readContent();
 
-      printf("   uncompressedsize=%lu\n", cont.size());
+      printf("   uncompressedsize=%zu\n", cont.size());
       // I assume uncompressed file must be larger than 4 bytes. because it just test!
       printf("   %c%c%c%c...\n", cont[0], cont[1], cont[2], cont[3]);
     }
