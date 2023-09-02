@@ -6,6 +6,12 @@
 - C++03 compatible(but not yet tested)
 - Small enough to be able to modify for custom usecase
 
+## Setup
+
+- setup zlib
+- put cppunzip.hpp in your proejct and include it
+- Add include and link flag for zlib (like `-lz` in Mac)
+
 ## Usage
 
 Provide File interface to UnZipper, then listFiles return FileEntry which you can read content.
