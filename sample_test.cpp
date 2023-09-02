@@ -5,30 +5,12 @@
 
 using namespace cppunzip;
 
-File wrapIStream(std::istream& istream) {
-  File f;
-
-  istream.seekg(0, std::istream::end);
-  size_t size = istream.tellg();
-  istream.seekg(0);
-
-  f._size = size;
-  f._readAt = [&istream](size_t pos, uint8_t* dst, size_t len) {
-    istream.clear();
-    istream.seekg(pos);
-    istream.read((char*)dst, len);
-    return istream.gcount();
-  };
-
-  return f;
-}
-
-void testWrapIStream(File& f) {
+void testIStreamFile(File& f) {
   using namespace std;
 
   cout << f._size << endl;
   vector<uint8_t> buf(50);
-  int res = f._readAt(f._size-50, buf.data(), 50);
+  int res = f.readAt(f._size-50, buf.data(), 50);
   cout << res << endl;
   printf("%x, %x, %x, %x\n", buf[42], buf[43], buf[44], buf[45]);
 }
@@ -86,9 +68,9 @@ int main() {
   using namespace cppunzip::impl;
 
   ifstream is("test.zip");
-  File f = wrapIStream(is);
+  IStreamFile f(is);
 
-  // testWrapIStream(f);
+  // testIStreamFile(f);
   // testInternalAPI(f);
   testPublicAPI(f);
 

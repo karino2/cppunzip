@@ -6,7 +6,7 @@
 
 #include <string>
 #include <cstdint>
-#include <functional>
+#include <istream>
 #include <stdexcept>
 
 // depend on zlib.
@@ -26,19 +26,16 @@ struct UnZipError : public std::runtime_error {
 
 
 struct File {
-  // set these fields.
-  // It should be constructor, but I don't want to use RValue reference for 03 compatibility.
-  // And I want to use rvalue reference in application side.
-  // So I leave initialization by setter injection.(by hand)
   size_t _size;
-  std::function<int(size_t pos, uint8_t* dst, size_t size)> _readAt;
 
+  File(size_t size) : _size(size) {}
+  virtual ~File(){}
 
   // utility method.
   int readAt(size_t pos, uint8_t *dst, size_t size) {
     if(pos > _size)
       throw UnZipError("Try to read outside of file end.");
-    return _readAt(pos, dst, size);
+    return readAtImpl(pos, dst, size);
   }
 
   void readSpecificSize(size_t offset, uint8_t* dst, size_t size, const std::string& errMsg) {
@@ -47,7 +44,27 @@ struct File {
       throw UnZipError(errMsg);
   }
 
+protected:
+  virtual int readAtImpl(size_t pos, uint8_t* dst, size_t size) = 0;
+};
 
+struct IStreamFile : public File {
+  std::istream& _istream;
+
+  IStreamFile(std::istream& istream) : File(0), _istream(istream) {
+    istream.seekg(0, std::istream::end);
+    _size = istream.tellg();
+    istream.seekg(0);
+  }
+  virtual ~IStreamFile() {}
+
+protected:
+  int readAtImpl(size_t pos, uint8_t* dst, size_t size) {
+    _istream.clear();
+    _istream.seekg(pos);
+    _istream.read((char*)dst, size);
+    return _istream.gcount();
+  }
 };
 
 
@@ -444,8 +461,6 @@ private:
 
     return reader.readEOCDRecord();
   }
-
-
 };
 
 } ///<cppunzip
