@@ -1,5 +1,6 @@
 #include "cppunzip.hpp"
 #include <iostream>
+#include <vector>
 #include <fstream>
 #include <cstdio>
 
