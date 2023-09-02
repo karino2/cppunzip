@@ -390,6 +390,7 @@ struct FileEntry {
 
   bool isDir() const { return _entry.isDir(); }
   const std::string& fileName() const { return _entry._fileName; }
+  size_t contentSize() const { return _entry._uncompressedSize; }
 
   std::vector<uint8_t> readContent() {
     impl::CDRContentReader ereader(_file, _entry);
