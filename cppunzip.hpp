@@ -131,11 +131,11 @@ struct CDRecord {
   bool isDir() const { return (_fileName.size() != 0) && (_fileName[_fileName.size()-1] =='/'); }
 };
 
-uint16_t Read2Byte(uint8_t* buf, size_t pos) {
+inline uint16_t Read2Byte(uint8_t* buf, size_t pos) {
   return ((uint16_t)buf[pos]) | (((uint16_t)buf[pos+1]) << 8);
 }
 
-uint32_t Read4Byte(uint8_t* buf, size_t pos) {
+inline uint32_t Read4Byte(uint8_t* buf, size_t pos) {
   return ((uint32_t)buf[pos]) | (((uint32_t)buf[pos+1]) << 8)| (((uint32_t)buf[pos+2]) << 16)| (((uint32_t)buf[pos+3]) << 24);
 }
 
