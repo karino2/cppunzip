@@ -65,7 +65,7 @@ void testPublicAPI(File& f) {
 }
 
 int main() {
-  std::ifstream is("test.zip");
+  std::ifstream is("test.zip", std::ios::binary);
   IStreamFile f(is);
 
   // testIStreamFile(f);

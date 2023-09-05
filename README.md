@@ -25,7 +25,7 @@ Basic usage is like this:
 
   using namespace cppunzip;
 
-  std::ifstream is("test.zip");
+  std::ifstream is("test.zip", std::ios::binary);
   IStreamFile f(is);
 
   UnZipper unzipper(f);
