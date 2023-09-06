@@ -11,9 +11,7 @@
 #include <stdexcept>
 
 // depend on zlib.
-extern "C" {
 #include <zlib.h>
-}
 
 /*
   Only support compressio method 0 and 8 (no compress and deflate.)
