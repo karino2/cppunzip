@@ -34,6 +34,11 @@ struct File {
   int readAt(size_t pos, uint8_t *dst, size_t size) {
     if(pos > _size)
       throw UnZipError("Try to read outside of file end.");
+
+    // size == 0 read is valid.
+    // do nothing.
+    if (size == 0)
+      return 0;
     return readAtImpl(pos, dst, size);
   }
 
